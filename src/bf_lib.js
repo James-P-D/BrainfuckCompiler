@@ -29,7 +29,16 @@ exports.writeFile = function(filename, str) {
     }
 }
 
-exports.runFile = function(filename, params) {
+exports.appendFile = function(filename, str) {
+    try {
+        fs.appendFileSync(filename, str)
+    } catch(err) {
+        console.log(err);
+        process.exit(bfConsts.OUTPUT_FILE_NOT_FOUND);
+    }
+}
+
+exports.runFile = function (filename, params) {
     externalProcess = spawn(filename, params);
     externalProcess.stdout.on('data', function (data) {
         console.log('stdout: ' + data.toString());
@@ -40,15 +49,6 @@ exports.runFile = function(filename, params) {
     externalProcess.on('exit', function (code) {
         console.log('child process exited with code ' + code.toString());
     });
-}
-
-exports.appendFile = function(filename, str) {
-    try {
-        fs.appendFileSync(filename, str)
-    } catch(err) {
-        console.log(err);
-        process.exit(bfConsts.OUTPUT_FILE_NOT_FOUND);
-    }
 }
 
 exports.removeComments = function(str) {
@@ -180,4 +180,15 @@ exports.parse = function(str, index, depth) {
         output: output,
         index: index
     };
+}
+
+exports.compile = function (commands, outputFilename) {
+    try {
+        this.writeFile(outputFilename, bfConsts.ASM_HEADER);
+        this.appendFile(outputFilename, bfConsts.ASM_FOOTER);
+        
+    } catch (err) {
+        console.log(err);
+        process.exit(bfConsts.UNABLE_TO_COMPILE)
+    }
 }
