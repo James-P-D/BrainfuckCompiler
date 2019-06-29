@@ -20,39 +20,43 @@ module.exports = Object.freeze({
 
     // Assembly
     ASM_HEADER:
-        '.386                 ; 386 Processor Instruction Set\n' +
-        '.model flat, stdcall ; Flat memory model and stdcall method\n' +
+        '.386                  ; 386 Processor Instruction Set\n' +
+        '.model flat, stdcall  ; Flat memory model and stdcall method\n' +
         'option casemap: none  ; Case Sensitive\n' +
         '\n' +
-        'include c: \masm32\include\windows.inc\n' +
-        'include c: \masm32\include\kernel32.inc\n' +
-        'include c: \masm32\include\masm32.inc\n' +
-        'includelib c: \masm32\lib\kernel32.lib \n' +
-        'includelib c: \masm32\m32lib\masm32.lib\n' +
+        'include c:\\masm32\\include\\windows.inc\n' +
+        'include c:\\masm32\\include\\kernel32.inc\n' +
+        'include c:\\masm32\\include\\masm32.inc\n' +
+        'includelib c:\\masm32\\lib\\kernel32.lib \n' +
+        'includelib c:\\masm32\\m32lib\\masm32.lib\n' +
         '\n' +
         '.data\n' +
-        'STD_OUTPUT_HANDLE   EQU - 11                   ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
-        'STD_INPUT_HANDLE    EQU - 10                   ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
-        '\n' +
-        'displayByte         db 0, 0                    ; Two bytes. First for the char to display, the second stays as zero for string termination\n' +
+        'STD_OUTPUT_HANDLE   equ -11                    ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
+        'STD_INPUT_HANDLE    equ -10                    ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
+        'displayByte         db 0                       ; Our output bytes\n' +
         'displayByteLength   equ $ - offset displayByte ; Length of displayByte\n' +
+        'BUFFER_SIZE         equ 10000                  ; Brainfuck buffer size\n' +
+        'bufferStart         equ $                      ; Start position of buffer\n' +
+        'buffer              db BUFFER_SIZE dup(0)      ; Our 10000-byte brainfuck buffer, initialised to zero\n' +
         '\n' +
-        '.data ?\n' +
-        'consoleOutHandle    dd ?                       ; Our ouput handle\n' +
-        'consoleInHandle     dd ?                       ; Our input handle\n' +
-        'bytesWritten        dd ?                       ; Number of bytes written to output\n' +
-        'bytesRead           dd ?                       ; Number of bytes written to input\n' +
+        '.data?\n' +
+        'consoleOutHandle    dd ?                       ; Our ouput handle (currently undefined)\n' +
+        'consoleInHandle     dd ?                       ; Our input handle (currently undefined)\n' +
+        'bytesWritten        dd ?                       ; Number of bytes written to output (currently undefined)\n' +
+        'bytesRead           dd ?                       ; Number of bytes written to input (currently undefined)\n' +
         '\n' +
         '.code\n' +
         'start:              call getIOHandles          ; Get the input/output handles\n' +
+        '                    mov esi, bufferStart       ; \n' +
         '\n' +
-        ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROGRAM STARTS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; \n' +
+        ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROGRAM STARTS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n' +
         '\n',
 
     ASM_FOOTER:
-        ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROGRAM ENDS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n' +
+        '\n'+
+        ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PROGRAM ENDS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\n' +
         '\n' +
-        'jmp exit; All done!\n' +
+        '                    jmp exit                   ; All done!\n' +
         '\n' +
         'getIOHandles:       push STD_OUTPUT_HANDLE     ; _In_ DWORD nStdHandle\n' +
         '                    call GetStdHandle          ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
@@ -78,9 +82,9 @@ module.exports = Object.freeze({
         '                    call ReadConsole           ; https://docs.microsoft.com/en-us/windows/console/readconsole\n' +
         '                    ret\n' +
         '\n' +
-        '; readCurrentByte:  push offset bytesRead        ; Gah! This sort - of works.The problem with ReadConsole is that it doesnt return until <ENTER>\n' +
-        ';                   push 1                       ; is pressed.The problem with ReadConsoleInput is that it returns when *any* key is pressed\n'+
-        ';                   push offset displayByte      ; including < SHIFT >, <ALT>, <CAPS-LOCK> etc. ReadConsoleInput is too fine for our needs,\n'+
+        '; readCurrentByte2: push offset bytesRead        ; Gah! This sort-of works. The problem with ReadConsole is that it doesnt return until <ENTER>\n' +
+        ';                   push 1                       ; is pressed. The problem with ReadConsoleInput is that it returns when *any* key is pressed\n'+
+        ';                   push offset displayByte      ; including <SHIFT>, <ALT>, <CAPS-LOCK> etc. ReadConsoleInput is too fine for our needs,\n'+
         ';                   push consoleInHandle         ; but depressingly ReadConsole isnt fine enough. :(\n'+
         ';                   call ReadConsoleInput        ; https://docs.microsoft.com/en-us/windows/console/readconsoleinput\n'+
         '\n'+

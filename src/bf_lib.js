@@ -7,7 +7,11 @@ var spawn = require('child_process').spawn;
 
 exports.usage = function() {
     console.log('Usage:');
-    console.log('bf inputfile outputfile');
+    console.log('bf inputfile outputfile [options]');
+    console.log('[options] - /d - Show debugging information during parsing');
+    console.log('          - /a - Assemble (must have MASM32 installed)');
+    console.log('          - /r - Run (must be used with /a)');
+    console.log('          - /s - Generate safe code (checks for buffer under and overruns with < and > commands)');
     process.exit(bfConsts.USAGE)
 };
 
@@ -29,7 +33,7 @@ exports.writeFile = function(filename, str) {
     }
 }
 
-exports.appendFile = function(filename, str) {
+function appendFile(filename, str) {
     try {
         fs.appendFileSync(filename, str)
     } catch(err) {
@@ -185,10 +189,74 @@ exports.parse = function(str, index, depth) {
 exports.compile = function (commands, outputFilename) {
     try {
         this.writeFile(outputFilename, bfConsts.ASM_HEADER);
-        this.appendFile(outputFilename, bfConsts.ASM_FOOTER);
-        
+
+        for (var i = 0; i < commands.output.length; i++) {
+            compileCommand(commands.output[i], outputFilename);
+        }
+
+        appendFile(outputFilename, bfConsts.ASM_FOOTER);
     } catch (err) {
         console.log(err);
         process.exit(bfConsts.UNABLE_TO_COMPILE)
     }
+}
+
+function compileCommand(command, outputFilename) {
+    if (command instanceof bfCommands.bfIncDataPointerCommand) {
+        if (command.counter == 1) {
+            appendFile(outputFilename,
+                '                    inc esi                          ; >\n');
+        } else {
+            appendFile(outputFilename,
+                '                    add esi, ' + pad(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.INCREMENT_DATA_POINTER, command.counter) + '\n');
+        }
+    } else if (command instanceof bfCommands.bfDecDataPointerCommand) {
+        if (command.counter == 1) {
+            appendFile(outputFilename,
+                '                    dec esi                          ; <\n');
+        } else {
+            appendFile(outputFilename,
+                '                    sub esi, ' + pad(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.DECREMENT_DATA_POINTER, command.counter) + '\n');
+        }
+    } else if (command instanceof bfCommands.bfIncDataCommand) {
+        if (command.counter == 1) {
+            appendFile(outputFilename,
+                '                    inc byte ptr [esi]               ; +\n')
+        } else {
+            appendFile(outputFilename,
+                '                    add byte ptr [esi], ' + pad(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.INCREMENT_DATA, command.counter) + '\n');
+        }
+    } else if (command instanceof bfCommands.bfDecDataCommand) {
+        if (command.counter == 1) {
+            appendFile(outputFilename,
+                '                    dec byte ptr [esi]               ; -\n')
+        } else {
+            appendFile(outputFilename,
+                '                    sub byte ptr [esi], ' + pad(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.DECREMENT_DATA, command.counter) + '\n');
+        }
+    } else if (command instanceof bfCommands.bfOutputCommand) {
+        appendFile(outputFilename,
+            '                    mov ah, byte ptr [esi]           ; .\n' +
+            '                    mov displayByte, ah              ; \n' +
+            '                    call displayCurrentByte          ; \n');
+    } else if (command instanceof bfCommands.bfInputCommand) {
+        appendFile(outputFilename,
+            '                    call readCurrentByte             ; ,\n')
+    } else if (command instanceof bfCommands.bfWhileNotZero) {
+        appendFile(outputFilename, '\n');
+    } else if (command instanceof bfCommands.bfEndWhile) {
+
+    }
+}
+
+function pad(num, size) {
+    var s = num + "";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
+
+function multipleSymbol(symbol, num) {
+    var s = '';
+    for (var i = 0; i < num; i++) s += symbol;
+    return s;
 }
