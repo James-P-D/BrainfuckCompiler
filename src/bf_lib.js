@@ -1,17 +1,63 @@
 var fs = require('fs');
 var bfConsts = require('./bf_constants');
 var bfCommands = require('./bf_command');
-//var exec = require('child_process').exec;
-//var execFile = require('child_process').execFile, child;
 var spawn = require('child_process').spawn;
 
-exports.usage = function() {
+exports.parseParameters = function(args) {
+    var inputFilename = '';
+    var outputFilename = '';
+    var debugMode = false;
+    var assemble = false;
+    var run = false;
+    var safe = false;
+
+    if (args.length < 4) {
+        usage();
+    }
+
+    for (var i = 2; i < args.length; i++) {
+        if (i == 2) {
+            inputFilename = args[i];
+        } else if (i == 3) {
+            outputFilename = args[i];
+        } else {
+            if (args[i].toUpperCase() === bfConsts.DEBUG_MODE) {
+                debugMode = true;
+            } else if (args[i].toUpperCase() === bfConsts.ASSEMBLE) {
+                assemble = true;
+            } else if (args[i].toUpperCase() === bfConsts.RUN) {
+                run = true;
+            } else if (args[i].toUpperCase() === bfConsts.SAFE) {
+                safe = true;
+            } else {
+                console.log('Unknown parameter: ' + args[i]);
+                usage();
+            }
+        }
+    }
+
+    if (run && (!assemble)) {
+        console.log('Cannot use ' + bfConsts.RUN + ' without ' + bfConsts.ASSEMBLE);
+        usage();
+    }
+
+    return {
+        inputFilename: inputFilename,
+        outputFilename: outputFilename,
+        debugMode: debugMode,
+        assemble: assemble,
+        run: run,
+        safe: safe
+    };
+}
+
+function usage() {
     console.log('Usage:');
-    console.log('bf inputfile outputfile [options]');
-    console.log('[options] - /d - Show debugging information during parsing');
-    console.log('          - /a - Assemble (must have MASM32 installed)');
-    console.log('          - /r - Run (must be used with /a)');
-    console.log('          - /s - Generate safe code (checks for buffer under and overruns with < and > commands)');
+    console.log('node bf.js inputfile outputfile [options]');
+    console.log('[options] - /D - Show debugging information during parsing');
+    console.log('          - /A - Assemble (must have MASM32 installed)');
+    console.log('          - /R - Run (must be used with /a)');
+    console.log('          - /S - Generate safe code (checks for buffer under and overruns with < and > commands)');
     process.exit(bfConsts.USAGE)
 };
 

@@ -18,6 +18,12 @@ module.exports = Object.freeze({
     UNABLE_TO_EXECUTE: 5,
     UNABLE_TO_COMPILE: 6,
 
+    // Parameters
+    DEBUG_MODE: '/D',
+    ASSEMBLE: '/A',
+    RUN: '/R',
+    SAFE: '/S',
+
     // Assembly
     ASM_HEADER:
         '.386                  ; 386 Processor Instruction Set\n' +
