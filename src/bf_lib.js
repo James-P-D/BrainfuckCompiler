@@ -4,12 +4,21 @@ var bfCommands = require('./bf_command');
 var spawn = require('child_process').spawn;
 
 exports.parseParameters = function(args) {
-    var inputFilename = '';
-    var outputFilename = '';
+    var inputFilename = './examples/alphabet.bf';
+    var outputFilename = './examples/alphabet.asm';
     var debugMode = false;
     var assemble = false;
     var run = false;
     var safe = false;
+
+    return {
+        inputFilename: inputFilename,
+        outputFilename: outputFilename,
+        debugMode: debugMode,
+        assemble: assemble,
+        run: run,
+        safe: safe
+    };
 
     if (args.length < 4) {
         usage();
