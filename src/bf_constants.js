@@ -66,10 +66,10 @@ module.exports = Object.freeze({
         '\n' +
         'getIOHandles:       push STD_OUTPUT_HANDLE     ; _In_ DWORD nStdHandle\n' +
         '                    call GetStdHandle          ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
-        '                    mov[consoleOutHandle], eax ; Save the output handle\n' +
+        '                    mov [consoleOutHandle], eax; Save the output handle\n' +
         '                    push STD_INPUT_HANDLE      ; _In_ DWORD nStdHandle\n'+
         '                    call GetStdHandle          ; https://docs.microsoft.com/en-us/windows/console/getstdhandle\n' +
-        '                    mov[consoleInHandle], eax  ; Save the input handle\n' +
+        '                    mov [consoleInHandle], eax ; Save the input handle\n' +
         '                    ret\n'+
         '\n' +
         'displayCurrentByte: push 0                     ; _Reserved_      LPVOID  lpReserved\n' +
