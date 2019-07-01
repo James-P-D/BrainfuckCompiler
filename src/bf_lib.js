@@ -237,13 +237,15 @@ exports.parse = function(str, index, depth) {
 
 exports.compile = function (commands, outputFilename) {
     try {
-        this.writeFile(outputFilename, bfConsts.ASM_HEADER);
+        var header = this.readFile(bfConsts.ASM_HEADER);
+        this.writeFile(outputFilename, header);
 
         for (var i = 0; i < commands.output.length; i++) {
             compileCommand(commands.output[i], outputFilename);
         }
 
-        appendFile(outputFilename, bfConsts.ASM_FOOTER);
+        var footer = this.readFile(bfConsts.ASM_FOOTER);
+        appendFile(outputFilename, footer);
     } catch (err) {
         console.log(err);
         process.exit(bfConsts.UNABLE_TO_COMPILE)
