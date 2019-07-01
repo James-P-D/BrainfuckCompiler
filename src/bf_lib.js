@@ -6,18 +6,16 @@ var spawn = require('child_process').spawn;
 exports.parseParameters = function(args) {
     var inputFilename = './examples/alphabet.bf';
     var outputFilename = './examples/alphabet.asm';
-    var debugMode = false;
+    var debugMode = true;
     var assemble = false;
     var run = false;
-    var safe = false;
-
+    
     return {
         inputFilename: inputFilename,
         outputFilename: outputFilename,
         debugMode: debugMode,
         assemble: assemble,
         run: run,
-        safe: safe
     };
 
     if (args.length < 4) {
@@ -36,8 +34,6 @@ exports.parseParameters = function(args) {
                 assemble = true;
             } else if (args[i].toUpperCase() === bfConsts.RUN) {
                 run = true;
-            } else if (args[i].toUpperCase() === bfConsts.SAFE) {
-                safe = true;
             } else {
                 console.log('Unknown parameter: ' + args[i]);
                 usage();
@@ -56,7 +52,6 @@ exports.parseParameters = function(args) {
         debugMode: debugMode,
         assemble: assemble,
         run: run,
-        safe: safe
     };
 }
 
@@ -66,7 +61,6 @@ function usage() {
     console.log('[options] - /D - Show debugging information during parsing');
     console.log('          - /A - Assemble (must have MASM32 installed)');
     console.log('          - /R - Run (must be used with /a)');
-    console.log('          - /S - Generate safe code (checks for buffer under and overruns with < and > commands)');
     process.exit(bfConsts.USAGE)
 };
 
@@ -309,6 +303,7 @@ function pad(num, size) {
     while (s.length < size) s = "0" + s;
     return s;
 }
+
 
 function multipleSymbol(symbol, num) {
     var s = '';
