@@ -11,8 +11,8 @@ includelib c:\\masm32\\m32lib\\masm32.lib
 .data
 STD_OUTPUT_HANDLE   equ -11                    ; https://docs.microsoft.com/en-us/windows/console/getstdhandle
 STD_INPUT_HANDLE    equ -10                    ; https://docs.microsoft.com/en-us/windows/console/getstdhandle
-displayByte         db 0                       ; Our output bytes
-displayByteLength   equ $ - offset displayByte ; Length of displayByte
+ioByte              db 0                       ; Our input/output byte
+ioByteLength        equ $ - offset ioByte      ; Length of ioByte
 BUFFER_SIZE         equ 10000                  ; Brainfuck buffer size
 bufferStart         equ $                      ; Start position of buffer
 buffer              db BUFFER_SIZE dup(0)      ; Our 10000-byte brainfuck buffer, initialised to zero

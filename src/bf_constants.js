@@ -21,9 +21,19 @@ module.exports = Object.freeze({
     // Parameters
     DEBUG_MODE: '/D',
     ASSEMBLE: '/A',
-    RUN: '/R',
-    
+
+    // File types
+    ASM_FILE_EXTENSION: '.asm',
+    OBJ_FILE_EXTENSION: '.obj',
+
     // Assembly Files
     ASM_HEADER: './header.asm',
-    ASM_FOOTER: './footer.asm'
+    ASM_FOOTER: './footer.asm',
+
+    // External Execution
+    MASM32_COMPILE: 'c:\\masm32\\bin\\ml.exe',
+    MASM32_COMPILE_PARAM1: '/c',
+    MASM32_COMPILE_PARAM2: '/coff',
+    MASM32_LINK: 'c:\\masm32\\bin\\polink.exe',
+    MASM32_LINK_PARAM1: '/SUBSYSTEM:console'
 });

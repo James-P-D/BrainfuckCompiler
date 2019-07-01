@@ -3,37 +3,35 @@ var bfConsts = require('./bf_constants');
 var bfCommands = require('./bf_command');
 var spawn = require('child_process').spawn;
 
-exports.parseParameters = function(args) {
-    var inputFilename = './examples/alphabet.bf';
-    var outputFilename = './examples/alphabet.asm';
-    var debugMode = true;
+exports.parseParameters = function (args) {
+    // Initialise our settings
+    var inputFilename = '';
+    var asmFilename = '';
+    var objFilename = '';
+    var debugMode = false;
     var assemble = false;
     var run = false;
-    
-    return {
-        inputFilename: inputFilename,
-        outputFilename: outputFilename,
-        debugMode: debugMode,
-        assemble: assemble,
-        run: run,
-    };
-
-    if (args.length < 4) {
+        
+    if (args.length < 3) {
+        // Expected args should be atleast 'node.exe bj.js sourcecode.bf', so anything less
+        // than that and we should display the usage
         usage();
     }
 
+    // args[0] and [1] will be 'node.exe' and 'bf.js' so we only need to parse the rest..
     for (var i = 2; i < args.length; i++) {
+        // First actual paramter should be the Brainfuck source code file
         if (i == 2) {
+            // Initialise the inputFilename setting, and generate the .asm and .obj filenames
             inputFilename = args[i];
-        } else if (i == 3) {
-            outputFilename = args[i];
+            asmFilename = changeFileExtension(inputFilename, bfConsts.ASM_FILE_EXTENSION);
+            objFilename = changeFileExtension(inputFilename, bfConsts.OBJ_FILE_EXTENSION);
         } else {
+            // Get any remaining parameters
             if (args[i].toUpperCase() === bfConsts.DEBUG_MODE) {
                 debugMode = true;
             } else if (args[i].toUpperCase() === bfConsts.ASSEMBLE) {
                 assemble = true;
-            } else if (args[i].toUpperCase() === bfConsts.RUN) {
-                run = true;
             } else {
                 console.log('Unknown parameter: ' + args[i]);
                 usage();
@@ -41,29 +39,34 @@ exports.parseParameters = function(args) {
         }
     }
 
-    if (run && (!assemble)) {
-        console.log('Cannot use ' + bfConsts.RUN + ' without ' + bfConsts.ASSEMBLE);
-        usage();
-    }
-
+    // Finally, return our settings
     return {
         inputFilename: inputFilename,
-        outputFilename: outputFilename,
+        asmFilename: asmFilename,
+        objFilename: objFilename,
         debugMode: debugMode,
         assemble: assemble,
-        run: run,
     };
 }
 
+// Small function for changing a file extension.
+function changeFileExtension(filename, newExtension) {
+    return filename.substr(0, filename.lastIndexOf(".")) + newExtension;
+}
+
+// Display command-line usage and return to OS
 function usage() {
     console.log('Usage:');
-    console.log('node bf.js inputfile outputfile [options]');
+    console.log('node bf.js inputfile [options]');
+    console.log('inputfile - Brainfuck source code file (must be current directory due to MAS32 issues)')
     console.log('[options] - /D - Show debugging information during parsing');
     console.log('          - /A - Assemble (must have MASM32 installed)');
-    console.log('          - /R - Run (must be used with /a)');
+    console.log('');
+    console.log('e.g. node bf.js ./helloworld.bf /D /A');
     process.exit(bfConsts.USAGE)
 };
 
+// Read from a file and return results
 exports.readFile = function(filename) {    
     try {
         return fs.readFileSync(filename, "utf-8");
@@ -73,6 +76,7 @@ exports.readFile = function(filename) {
     }
 };
 
+// Create and write to a file
 exports.writeFile = function(filename, str) {
     try {
         fs.writeFileSync(filename, str)
@@ -82,6 +86,7 @@ exports.writeFile = function(filename, str) {
     }
 }
 
+// Append to an existing file
 function appendFile(filename, str) {
     try {
         fs.appendFileSync(filename, str)
@@ -91,19 +96,39 @@ function appendFile(filename, str) {
     }
 }
 
-exports.runFile = function (filename, params) {
-    externalProcess = spawn(filename, params);
-    externalProcess.stdout.on('data', function (data) {
-        console.log('stdout: ' + data.toString());
-    });
-    externalProcess.stderr.on('data', function (data) {
-        console.log('stderr: ' + data.toString());
-    });
-    externalProcess.on('exit', function (code) {
-        console.log('child process exited with code ' + code.toString());
-    });
+exports.assemble = function (settings) {
+    // Only actually run MASM to assemble and link if the '/A' paramter was used
+    if (settings.assemble) {
+        assembleProcess = spawn(bfConsts.MASM32_COMPILE, [bfConsts.MASM32_COMPILE_PARAM1, bfConsts.MASM32_COMPILE_PARAM2, settings.asmFilename]);
+        assembleProcess.stdout.on('data', function (data) {
+            console.log('Assemble: ' + data.toString());
+        });
+        assembleProcess.stderr.on('data', function (data) {
+            console.log('Assemble error: ' + data.toString());
+        });
+        assembleProcess.on('exit', function (code) {
+            console.log('Assemble exit code: ' + code.toString());
+
+            // If we assembled the .obj file, then link..
+            if (code == 0) {
+                linkProcess = spawn(bfConsts.MASM32_LINK, [bfConsts.MASM32_LINK_PARAM1, settings.objFilename]);
+                linkProcess.stdout.on('data', function (data) {
+                    console.log('Link: ' + data.toString());
+                });
+                linkProcess.stderr.on('data', function (data) {
+                    console.log('Link error: ' + data.toString());
+                });
+                linkProcess.on('exit', function (code) {
+                    console.log('Link exit code: ' + code.toString());
+                });
+            }
+        });
+    }
 }
 
+// Remove any non-Brainfuck characters and check for brace balencing (number of '['
+// equals number of ']' and that we don't leave any braces open at EOF, or attempt
+// to close a brace without an opering one.)
 exports.removeComments = function(str) {
     var braketCount = 0;
     try {
@@ -156,6 +181,7 @@ exports.removeComments = function(str) {
     }
 }
 
+// Recursive parsing of the Brainfuck program
 exports.parse = function(str, index, depth) {
     try {
         var output = [];
@@ -167,9 +193,12 @@ exports.parse = function(str, index, depth) {
             switch(ch)
             {
                 case bfConsts.INCREMENT_DATA_POINTER : {
-                    if((lastItem != null) && (lastItem instanceof bfCommands.bfIncDataPointerCommand)) {
+                    if ((lastItem != null) && (lastItem instanceof bfCommands.bfIncDataPointerCommand)) {
+                        // If the previous command was also a bfIncDataPointerCommand then just grab it and
+                        // incremement..
                         lastItem.increment();
                     } else {
+                        // ..otherwise, add a new bfIncDataPointerCommand.
                         output.push(new bfCommands.bfIncDataPointerCommand());
                     }
                     break;
@@ -198,14 +227,16 @@ exports.parse = function(str, index, depth) {
                     }
                     break;
                 }
-                case bfConsts.WHILE_NOT_ZERO : {                    
+                case bfConsts.WHILE_NOT_ZERO: {     
+                    // Recursively parse...
                     var retVal = this.parse(str, index + 1, depth + 1);
-                    output.push(retVal.output);
+                    // ...and add the bfWhileNotZero entry 
+                    output.push(new bfCommands.bfWhileNotZero(retVal.output));
                     index = retVal.index;
                     break;
                 }
-                case bfConsts.END_WHILE : {
-                    output.push(new bfCommands.bfEndWhile());
+                case bfConsts.END_WHILE: {
+                    // Return to caller, closing the while loop
                     return {
                         output: output,
                         index: index
@@ -228,85 +259,104 @@ exports.parse = function(str, index, depth) {
         console.log(err);
         process.exit(bfConsts.UNABLE_TO_PARSE)
     }
-    
+
+    // Return to caller
     return {
         output: output,
         index: index
     };
 }
 
-exports.compile = function (commands, outputFilename) {
+// Shhhh.. Nothing to see here.
+var whileCounter;
+// Actual compiler
+exports.compile = function (commands, asmFilename) {
     try {
-        var header = this.readFile(bfConsts.ASM_HEADER);
-        this.writeFile(outputFilename, header);
+        whileCounter = 0;
 
+        // White the header Assembly...
+        var header = this.readFile(bfConsts.ASM_HEADER);
+        this.writeFile(asmFilename, header);
+
+        // ...and start compiling the commands
         for (var i = 0; i < commands.output.length; i++) {
-            compileCommand(commands.output[i], outputFilename);
+            compileCommand(commands.output[i], asmFilename);
         }
 
+        // White the footer Assembly
         var footer = this.readFile(bfConsts.ASM_FOOTER);
-        appendFile(outputFilename, footer);
+        appendFile(asmFilename, footer);
     } catch (err) {
         console.log(err);
         process.exit(bfConsts.UNABLE_TO_COMPILE)
     }
 }
 
-function compileCommand(command, outputFilename) {
+function compileCommand(command, asmFilename) {
     if (command instanceof bfCommands.bfIncDataPointerCommand) {
         if (command.counter == 1) {
-            appendFile(outputFilename,
+            appendFile(asmFilename,
                 '                    inc esi                          ; >\n');
         } else {
-            appendFile(outputFilename,
-                '                    add esi, ' + pad(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.INCREMENT_DATA_POINTER, command.counter) + '\n');
+            appendFile(asmFilename,
+                '                    add esi, ' + padNumber(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.INCREMENT_DATA_POINTER, command.counter) + '\n');
         }
     } else if (command instanceof bfCommands.bfDecDataPointerCommand) {
         if (command.counter == 1) {
-            appendFile(outputFilename,
+            appendFile(asmFilename,
                 '                    dec esi                          ; <\n');
         } else {
-            appendFile(outputFilename,
-                '                    sub esi, ' + pad(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.DECREMENT_DATA_POINTER, command.counter) + '\n');
+            appendFile(asmFilename,
+                '                    sub esi, ' + padNumber(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.DECREMENT_DATA_POINTER, command.counter) + '\n');
         }
     } else if (command instanceof bfCommands.bfIncDataCommand) {
         if (command.counter == 1) {
-            appendFile(outputFilename,
-                '                    inc byte ptr [esi]               ; +\n')
+            appendFile(asmFilename,
+                '                    inc byte ptr [esi]               ; +\n');
         } else {
-            appendFile(outputFilename,
-                '                    add byte ptr [esi], ' + pad(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.INCREMENT_DATA, command.counter) + '\n');
+            appendFile(asmFilename,
+                '                    add byte ptr [esi], ' + padNumber(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.INCREMENT_DATA, command.counter) + '\n');
         }
     } else if (command instanceof bfCommands.bfDecDataCommand) {
         if (command.counter == 1) {
-            appendFile(outputFilename,
-                '                    dec byte ptr [esi]               ; -\n')
+            appendFile(asmFilename,
+                '                    dec byte ptr [esi]               ; -\n');
         } else {
-            appendFile(outputFilename,
-                '                    sub byte ptr [esi], ' + pad(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.DECREMENT_DATA, command.counter) + '\n');
+            appendFile(asmFilename,
+                '                    sub byte ptr [esi], ' + padNumber(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.DECREMENT_DATA, command.counter) + '\n');
         }
     } else if (command instanceof bfCommands.bfOutputCommand) {
-        appendFile(outputFilename,
-            '                    mov ah, byte ptr [esi]           ; .\n' +
-            '                    mov displayByte, ah              ; \n' +
-            '                    call displayCurrentByte          ; \n');
+        appendFile(asmFilename,
+            '                    call displayCurrentByte          ; .\n');
     } else if (command instanceof bfCommands.bfInputCommand) {
-        appendFile(outputFilename,
-            '                    call readCurrentByte             ; ,\n')
+        appendFile(asmFilename,
+            '                    call readCurrentByte             ; ,\n');
     } else if (command instanceof bfCommands.bfWhileNotZero) {
-        appendFile(outputFilename, '\n');
-    } else if (command instanceof bfCommands.bfEndWhile) {
+        var currentWhileCounter = whileCounter;
+        appendFile(asmFilename,
+            'whileNotZero' + padNumber(currentWhileCounter, 4) + ':   cmp byte ptr [esi], 0            ; [\n' +
+            '                    je ' + 'endWhileNotZero' + padNumber(currentWhileCounter, 4) + '           ;\n');
+        whileCounter++;
 
+        for (var i = 0; i < command.bfCommands.length; i++) {
+            compileCommand(command.bfCommands[i], asmFilename);
+        }
+
+        appendFile(asmFilename,
+            '                    jmp whileNotZero' + padNumber(currentWhileCounter, 4) + '             ; ]\n' +
+            'endWhileNotZero' + padNumber(currentWhileCounter, 4) + ':                                 ;\n');
     }
 }
 
-function pad(num, size) {
+// Function for formatting numbers with leading zeros. Helps with text alignment
+function padNumber(num, size) {
     var s = num + "";
     while (s.length < size) s = "0" + s;
     return s;
 }
 
-
+// Function for multiplying symbols. Helps when we have multiple inc/dec Brainfuck commands
+// and use ADD/SUB rather than INC/DEC op-codes.
 function multipleSymbol(symbol, num) {
     var s = '';
     for (var i = 0; i < num; i++) s += symbol;
