@@ -133,7 +133,7 @@ exports.removeComments = function(str) {
                 case bfConsts.END_WHILE : {
                     braketCount--;
                     if(braketCount < 0) {
-                        throw "Unbalenced brackets!";
+                        throw "Unbalanced brackets!";
                     }
                     output += ch;
                     break;
@@ -146,7 +146,7 @@ exports.removeComments = function(str) {
         }
         
         if(braketCount != 0) {
-            throw "Unbalenced brackets!";
+            throw "Unbalanced brackets!";
         }
 
         return output;
