@@ -22,8 +22,7 @@ module.exports = Object.freeze({
     DEBUG_MODE: '/D',
     ASSEMBLE: '/A',
     RUN: '/R',
-    SAFE: '/S',
-
+    
     // Assembly Files
     ASM_HEADER: './header.asm',
     ASM_FOOTER: './footer.asm'
