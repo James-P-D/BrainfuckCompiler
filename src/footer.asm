@@ -27,8 +27,8 @@ readCurrentByte:    push -1                    ; _In_opt_        LPVOID  pInputC
                     push offset ioByte         ; _Out_           LPVOID  lpBuffer
                     push consoleInHandle       ; _In_            HANDLE  hConsoleInput
                     call ReadConsole           ; https://docs.microsoft.com/en-us/windows/console/readconsole
-					mov ah, ioByte             ; Move the byte read into AH register
-					mov byte ptr [esi], ah     ; Move the AH register into our memory buffer
+                    mov ah, ioByte             ; Move the byte read into AH register
+                    mov byte ptr [esi], ah     ; Move the AH register into our memory buffer
                     ret
 
 ; readCurrentByte2:   push offset bytesRead      ; Gah! This sort-of works. The problem with ReadConsole is that it doesnt return until <ENTER>
