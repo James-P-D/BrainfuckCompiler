@@ -1,10 +1,12 @@
 # BrainfuckCompiler
-A command-line application for generating MASM-compatible x86 Assembly versions of Brainfuck programs
+A command-line application for generating [MASM](http://masm32.com/download.htm)-compatible x86 Assembly versions of [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) programs.
 
-node.js alphabet /d /a 
+Please note that many of the example Brainfuck programs have been taken from [Daniel B. Cristofani's website](http://www.hevanet.com/cristofd/brainfuck/).
 
+## Usage
 
-C:\Users\jdorr\Desktop\Dev\BrainfuckCompiler\src>node bf.js alphabet.bf /d /a
+```
+C:\Dev\BrainfuckCompiler\src>node bf.js alphabet.bf /d /a
 Input file : alphabet.bf
 Asm file   : alphabet.asm
 Obj file   : alphabet.obj
@@ -35,23 +37,14 @@ while first cell (26) is not zero
 Parsed data:
 
 ++++++++++++++++++++++++++
-
 >
-
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 <
-
 [
-
     >
-
     .
-
     +
-
     <
-
     -
 ]
 
@@ -68,5 +61,11 @@ ASCII build
 
 Assemble exit code: 0
 Link exit code: 0
+```
 
-C:\Users\jdorr\Desktop\Dev\BrainfuckCompiler\src>alphabet.exe
+All we need to do now is run the file:
+
+```
+C:\Dev\BrainfuckCompiler\src>alphabet.exe
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+```
