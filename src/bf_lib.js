@@ -295,57 +295,56 @@ exports.compile = function (commands, asmFilename) {
 function compileCommand(command, asmFilename) {
     if (command instanceof bfCommands.bfIncDataPointerCommand) {
         if (command.counter == 1) {
-            appendFile(asmFilename,
-                '                    inc esi                          ; >\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_INC_DATA_POINTER, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.INCREMENT_DATA_POINTER + bfConsts.ASM_NEW_LINE);
         } else {
-            appendFile(asmFilename,
-                '                    add esi, ' + padNumber(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.INCREMENT_DATA_POINTER, command.counter) + '\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_ADD_DATA_POINTER, bfConsts.COLUMN_1) + padNumber(command.counter, 4), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + multipleSymbol(bfConsts.INCREMENT_DATA_POINTER, command.counter) + bfConsts.ASM_NEW_LINE);
         }
     } else if (command instanceof bfCommands.bfDecDataPointerCommand) {
         if (command.counter == 1) {
-            appendFile(asmFilename,
-                '                    dec esi                          ; <\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_DEC_DATA_POINTER, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.DECREMENT_DATA_POINTER + bfConsts.ASM_NEW_LINE);
         } else {
-            appendFile(asmFilename,
-                '                    sub esi, ' + padNumber(command.counter, 4) + '                    ; ' + multipleSymbol(bfConsts.DECREMENT_DATA_POINTER, command.counter) + '\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_SUB_DATA_POINTER, bfConsts.COLUMN_1) + padNumber(command.counter, 4), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + multipleSymbol(bfConsts.DECREMENT_DATA_POINTER, command.counter) + bfConsts.ASM_NEW_LINE);
         }
     } else if (command instanceof bfCommands.bfIncDataCommand) {
         if (command.counter == 1) {
-            appendFile(asmFilename,
-                '                    inc byte ptr [esi]               ; +\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_INC_DATA, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.INCREMENT_DATA + bfConsts.ASM_NEW_LINE);
         } else {
-            appendFile(asmFilename,
-                '                    add byte ptr [esi], ' + padNumber(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.INCREMENT_DATA, command.counter) + '\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_ADD_DATA, bfConsts.COLUMN_1) + padNumber(command.counter, 4), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + multipleSymbol(bfConsts.INCREMENT_DATA, command.counter) + bfConsts.ASM_NEW_LINE);
         }
     } else if (command instanceof bfCommands.bfDecDataCommand) {
         if (command.counter == 1) {
-            appendFile(asmFilename,
-                '                    dec byte ptr [esi]               ; -\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_DEC_DATA, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.DECREMENT_DATA + bfConsts.ASM_NEW_LINE);
         } else {
-            appendFile(asmFilename,
-                '                    sub byte ptr [esi], ' + padNumber(command.counter, 4) + '         ; ' + multipleSymbol(bfConsts.DECREMENT_DATA, command.counter) + '\n');
+            appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_SUB_DATA, bfConsts.COLUMN_1) + padNumber(command.counter, 4), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + multipleSymbol(bfConsts.DECREMENT_DATA, command.counter) + bfConsts.ASM_NEW_LINE);
         }
     } else if (command instanceof bfCommands.bfOutputCommand) {
-        appendFile(asmFilename,
-            '                    call displayCurrentByte          ; .\n');
+        appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_CALL_DISPLAY_CURRENT_BYTE, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.OUTPUT + bfConsts.ASM_NEW_LINE);
     } else if (command instanceof bfCommands.bfInputCommand) {
-        appendFile(asmFilename,
-            '                    call readCurrentByte             ; ,\n');
+        appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_CALL_READ_CURRENT_BYTE, bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.INPUT + bfConsts.ASM_NEW_LINE);
     } else if (command instanceof bfCommands.bfWhileNotZero) {
         var currentWhileCounter = whileCounter;
-        appendFile(asmFilename,
-            'whileNotZero' + padNumber(currentWhileCounter, 4) + ':   cmp byte ptr [esi], 0            ; [\n' +
-            '                    je ' + 'endWhileNotZero' + padNumber(currentWhileCounter, 4) + '           ;\n');
+        appendFile(asmFilename, padStringRight(padStringRight(bfConsts.ASM_WHILE_NOT_ZERO_LABEL + padNumber(currentWhileCounter, 4) + bfConsts.ASM_END_LABEL, bfConsts.COLUMN_1) + bfConsts.ASM_WHILE_NOT_ZERO, bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.WHILE_NOT_ZERO + bfConsts.ASM_NEW_LINE);
+        appendFile(asmFilename, padStringLeft(bfConsts.ASM_WHILE_NOT_ZERO_JUMP+padNumber(currentWhileCounter, 4), bfConsts.COLUMN_1) + bfConsts.ASM_NEW_LINE);
         whileCounter++;
 
         for (var i = 0; i < command.bfCommands.length; i++) {
             compileCommand(command.bfCommands[i], asmFilename);
         }
-
-        appendFile(asmFilename,
-            '                    jmp whileNotZero' + padNumber(currentWhileCounter, 4) + '             ; ]\n' +
-            'endWhileNotZero' + padNumber(currentWhileCounter, 4) + ':                                 ;\n');
+        appendFile(asmFilename, padStringRight(padStringLeft(bfConsts.ASM_END_WHILE_JUMP + padNumber(currentWhileCounter, 4), bfConsts.COLUMN_1), bfConsts.COLUMN_2) + bfConsts.ASM_COMMENT + bfConsts.END_WHILE + bfConsts.ASM_NEW_LINE);
+        appendFile(asmFilename, bfConsts.ASM_END_WHILE_LABEL + padNumber(currentWhileCounter, 4) + bfConsts.ASM_END_LABEL + bfConsts.ASM_NEW_LINE);
     }
+}
+
+// Function for padding strings to the left with whitespace
+function padStringLeft(s, size) {
+    for (var i = 0; i < size; i++) s = " " + s;
+    return s;
+}
+
+// Function for padding strings to the right with whitespace
+function padStringRight(s, size) {
+    while (s.length < size) s = s + " ";
+    return s;
 }
 
 // Function for formatting numbers with leading zeros. Helps with text alignment
