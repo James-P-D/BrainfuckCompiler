@@ -1,2 +1,2 @@
-https://codegolf DOT stackexchange.com/questions/55422/hello-world
+https://codegolfDOTstackexchangeDOTcom/questions/55422/helloHYPHENworld
 +[-[<<[+[--->]-[<<<]]]>>>-]>-.---.>..>.<<<<-.<+.>>>>>.>.<<.<-.
