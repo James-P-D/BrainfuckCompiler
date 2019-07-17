@@ -1,7 +1,9 @@
 # BrainfuckCompiler
 A command-line application for generating [MASM](http://masm32.com/download.htm)-compatible x86 Assembly versions of [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) programs.
 
-Please note that many of the example Brainfuck programs have been taken from [Daniel B. Cristofani's website](http://www.hevanet.com/cristofd/brainfuck/).
+For more information on Brainfuck commands, see my [BrainfuckBrowser](https://github.com/James-P-D/BrainfuckBrowser) repository.
+
+Please note that some of the example Brainfuck programs have been taken from [Daniel B. Cristofani's website](http://www.hevanet.com/cristofd/brainfuck/).
 
 ## Usage
 
