@@ -127,7 +127,7 @@ getIOHandles:       push STD_OUTPUT_HANDLE     ; _In_ DWORD nStdHandle
 
 displayCurrentByte: mov ah, byte ptr [esi]     ; Move the byte from memory into AH register 
                     mov ioByte, ah             ; Move AH into ioByte
-					push 0                     ; _Reserved_      LPVOID  lpReserved
+                    push 0                     ; _Reserved_      LPVOID  lpReserved
                     push offset bytesWritten   ; _Out_           LPDWORD lpNumberOfCharsWritten
                     push ioByteLength          ; _In_            DWORD   nNumberOfCharsToWrite
                     push offset ioByte         ; _In_      const VOID *  lpBuffer
