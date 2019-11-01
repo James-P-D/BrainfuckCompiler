@@ -1,5 +1,6 @@
 # BrainfuckCompiler
-A command-line application for generating [MASM](http://masm32.com/download.htm)-compatible x86 Assembly versions of [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) programs.
+
+A command-line node.js application for generating [MASM](http://masm32.com/download.htm)-compatible x86 Assembly versions of [Brainfuck](https://en.wikipedia.org/wiki/Brainfuck) programs.
 
 ![Screenshot](https://github.com/James-P-D/BrainfuckCompiler/blob/master/screenshot.gif)
 
