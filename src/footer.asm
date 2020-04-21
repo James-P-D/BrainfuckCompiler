@@ -15,7 +15,7 @@ displayCurrentByte: mov ah, byte ptr [esi]       ; Move the byte from memory int
                     mov ioByte, ah               ; Move AH into ioByte
 					push 0                       ; _Reserved_      LPVOID  lpReserved
                     push offset bytesWritten     ; _Out_           LPDWORD lpNumberOfCharsWritten
-                    push ioByteLength            ; _In_            DWORD   nNumberOfCharsToWrite
+                    push IO_BYTE_LENGTH          ; _In_            DWORD   nNumberOfCharsToWrite
                     push offset ioByte           ; _In_      const VOID *  lpBuffer
                     push consoleOutHandle        ; _In_            HANDLE  hConsoleOutput
                     call WriteConsole            ; https://docs.microsoft.com/en-us/windows/console/writeconsole
